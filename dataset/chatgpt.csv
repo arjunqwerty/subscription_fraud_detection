@@ -1,0 +1,11 @@
+Transaction_ID, Interaction_Speed, Input_Hesitation, Repeated_Attempts, Device_Type, IP_Location, Typing_Patterns, User_History, Session_Length, Geographical_Anomaly, Browser_Change, Uncommon_Service, Fraud
+1, 2.1, Yes, 0, Mobile, Chennai, Consistent, Normal, 300, No, No, No
+2, 1.5, No, 2, Desktop, Mumbai, Inconsistent, Frequent, 420, Yes, Yes, Yes
+3, 2.0, Yes, 1, Tablet, Delhi, Consistent, Normal, 240, No, No, No
+4, 2.3, No, 0, Mobile, Bangalore, Consistent, Infrequent, 180, No, No, Yes
+5, 1.8, Yes, 3, Laptop, Kolkata, Inconsistent, Frequent, 500, Yes, Yes, No
+6, 2.5, No, 0, Tablet, Chennai, Consistent, Normal, 320, No, No, No
+7, 1.6, Yes, 1, Mobile, Mumbai, Inconsistent, Frequent, 400, No, Yes, Yes
+8, 2.2, No, 0, Desktop, Delhi, Consistent, Normal, 280, No, No, No
+9, 1.9, Yes, 2, Tablet, Bangalore, Inconsistent, Infrequent, 360, Yes, Yes, No
+10, 2.4, No, 1, Laptop, Kolkata, Consistent, Frequent, 450, No, No, Yes

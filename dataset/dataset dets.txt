@@ -1,0 +1,20 @@
+Device type:
+1 - Desktop
+2 - Laptop
+3 - Mobile
+4 - Tablet
+
+IP_location
+1 - Bangalore
+2 - Chennai
+3 - Delhi
+4 - Hyderabad
+5 - Kolkata
+6 - Lucknow
+7 - Mumbai
+8 - Patna
+
+User_History
+1 - rare
+2 - normal
+3 - frequent
