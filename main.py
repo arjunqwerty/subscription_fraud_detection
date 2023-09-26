@@ -4,11 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, fbeta_score
 from sklearn.metrics import confusion_matrix, make_scorer
 from sklearn.model_selection import GridSearchCV
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 import joblib
 import os
@@ -89,21 +85,22 @@ def train_model(csv_file, model_filename):
     X_train, X_val, y_train, y_val = train_test_split(X_trainval, y_trainval, test_size=0.125, stratify=y_trainval['Fraud'], random_state=0)
 
     # Models
-    lr = LogisticRegression(random_state=0)
-    knn = KNeighborsClassifier()
-    svc = SVC()
+    # lr = LogisticRegression(random_state=0)
+    # knn = KNeighborsClassifier()
+    # svc = SVC()
     rfc = RandomForestClassifier()
-    xgb = XGBClassifier()
-    clf = [lr, knn,svc,rfc,xgb]
-    clf_str = ['LR','KNN','SVC','RFC','XGB']
+    # xgb = XGBClassifier()
+    clf = [rfc]
+    clf_str = ['RFC']
 
     # Parameter grids for GridSearch
-    lr_params = {'random_state':[0]}
-    knn_params = {'n_neighbors':[1,3,5,8,10]}
-    svc_params = {'C': [1, 10, 100], 'gamma': [0.1,1], 'kernel': ['rbf'], 'probability':[True], 'random_state':[0]}
+    # lr_params = {'random_state':[0]}
+    # knn_params = {'n_neighbors':[1,3,5,8,10]}
+    # svc_params = {'C': [1, 10, 100], 'gamma': [0.1,1], 'kernel': ['rbf'], 'probability':[True], 'random_state':[0]}
     rfc_params = {'n_estimators':[100,300,500,700], 'max_depth':[5,7,10], 'random_state':[0]}
-    xgb_params = {'n_estimators':[300,500,700], 'max_depth':[5,7], 'learning_rate':[0.01,0.1], 'objective':['binary:logistic']}
-    params = pd.Series(data=[lr_params,knn_params,svc_params,rfc_params,xgb_params], index=clf)
+    # xgb_params = {'n_estimators':[300,500,700], 'max_depth':[5,7], 'learning_rate':[0.01,0.1], 'objective':['binary:logistic']}
+    # params = pd.Series(data=[lr_params,knn_params,svc_params,rfc_params,xgb_params], index=clf)
+    params = pd.Series(data=[rfc_params], index=clf)
 
     # Tune hyperparameters with GridSearch (estimated time 8m)
     # print('GridSearch start')
@@ -119,30 +116,33 @@ def train_model(csv_file, model_filename):
     metrics_final = metrics_val*metrics_test
 
     # Calculating best model
-    macc = 0
-    bestm = 0
-    for i, j in enumerate(clf_str):
-        acc = metrics_final[j][0]
-        if acc > macc:
-            macc = acc
-            bestm = i
+    # macc = 0
+    # bestm = 0
+    # for i, j in enumerate(clf_str):
+    #     acc = metrics_final[j][0]
+    #     if acc > macc:
+    #         macc = acc
+    #         bestm = i
     # print(bestm, "\t", clf_str[bestm])
 
     # Saving model to file
-    best_model = fitted_models_binary[bestm]
+    best_model = fitted_models_binary[0]
     dirname = os.path.dirname(__file__)
     filename = os.path.join(dirname, 'models')
     filename = os.path.join(filename, model_filename)
-    joblib.dump(best_model, filename)
+    joblib.dump(best_model, filename+".pkl")
 
     st.write(f"Trained and saved in " + model_filename)
 
 # Define a function to make predictions using the saved AI model
 def predict(csv_file, model_filename):
-    st.write("Making predictions...")
+    col3.write("Making predictions...")
 
     # Load the saved model
-    model_from_file = joblib.load(model_filename)
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, 'models')
+    filename = os.path.join(filename, model_filename)
+    model_from_file = joblib.load(filename+".pkl")
     data = pd.read_csv(csv_file)
 
     # Drop ID columns
@@ -165,40 +165,46 @@ def predict(csv_file, model_filename):
     predictions = model_from_file.predict(df_pre[features])
 
     # Display Fraud and Non-Fraud rows
-    st.write("Fraud Rows:")
+    col3.write("Fraud Subscriptions:")
     true_rows = data[predictions == 1]
-    st.write(true_rows)
-
-    st.write("Non-Fraud Rows:")
-    false_rows = data[predictions == 0]
-    st.write(false_rows)
+    col3.write(true_rows['Transaction_ID'])
+    # st.write("Non-Fraud Rows:")
+    # false_rows = data[predictions == 0]
+    # st.write(false_rows)
 
 def list_saved_models():
-    saved_models = [f for f in os.listdir() if f.endswith(".pkl")]
+    saved_models = [f[:-4] for f in os.listdir('models') if f.endswith(".pkl")]
     return saved_models
 
 # Define the Streamlit app
-st.title("Fraud Detection App")
-# Add a sidebar for navigation
-page = st.sidebar.selectbox("Select a page:", ["Train Model", "Predict"])
+st.set_page_config(page_title="AI Model App", layout="wide")
+
+# Add a navigation bar with a logo, add a sidebar for navigation
+col1, cold, col2 = st.columns([1, 3, 1])
+col1.image("logo.png", width=250)
+
+page = col2.selectbox("Select a page:", ["Train Model", "Predict"], key="unique_key")
+
+cold1, col3, cold2 = st.columns([2, 3, 2])
+col3.title("Fraud Detection App")
 
 if page == "Train Model":
-    st.header("Train AI Model")
-    uploaded_file = st.file_uploader("Upload a CSV file for training:", type=["csv"])
-    model_filename = st.text_input("Enter the model filename (without extension):")
-    if st.button("Submit"):
+    col3.header("Train AI Model")
+    uploaded_file = col3.file_uploader("Upload a CSV file for training:", type=["csv"])
+    model_filename = col3.text_input("Enter the model filename (without extension):")
+    if col3.button("Submit"):
         if uploaded_file is not None:
-            with st.spinner("Training in progress..."):
-                train_model(uploaded_file, model_filename+".pkl")
-            st.success("Training completed!")
+            with col3.spinner("Training in progress..."):
+                train_model(uploaded_file, model_filename)
+            col3.success("Training completed!")
 elif page == "Predict":
-    st.header("Make Predictions")
-    uploaded_file = st.file_uploader("Upload a CSV file for predictions:", type=["csv"])
+    col3.header("Make Predictions")
+    uploaded_file = col3.file_uploader("Upload a CSV file for predictions:", type=["csv"])
     saved_models = list_saved_models()
     if saved_models is not None:
-        selected_model = st.selectbox("Select a trained model:", saved_models)
-        if st.button("Submit"):
+        selected_model = col3.selectbox("Select a trained model:", saved_models)
+        if col3.button("Submit"):
             if uploaded_file is not None:
                 predict(uploaded_file, selected_model)
     else:
-        st.header("No models trained yet")
+        col3.header("No models trained yet")
