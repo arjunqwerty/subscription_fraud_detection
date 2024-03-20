@@ -30,18 +30,6 @@ def eval_preds(model,X,y_true,y_pred):
     metrics = round(metrics,3)
     return cm, metrics
 
-def tune_and_fit(clf,X,y,params):
-    f2_scorer = make_scorer(fbeta_score, pos_label=1, beta=2)
-    start_time = time.time()
-    grid_model = GridSearchCV(clf, param_grid=params, cv=5, scoring=f2_scorer)
-    grid_model.fit(X, y['Fraud'])
-    # print('Best params:', grid_model.best_params_)
-    # Print training times
-    train_time = time.time()-start_time
-    mins = int(train_time//60)
-    print('Training time: '+str(mins)+'m '+str(round(train_time-mins*60))+'s')
-    return grid_model
-
 def predict_and_evaluate(fitted_models,X,y_true,clf_str):
     cm_dict = {key: np.nan for key in clf_str}
     metrics = pd.DataFrame(columns=clf_str)
@@ -55,6 +43,18 @@ def predict_and_evaluate(fitted_models,X,y_true,clf_str):
         cm_dict[model_name] = cm
         metrics[model_name] = scores
     return y_pred, cm_dict, metrics
+
+def tune_and_fit(clf,X,y,params):
+    f2_scorer = make_scorer(fbeta_score, pos_label=1, beta=2)
+    start_time = time.time()
+    grid_model = GridSearchCV(clf, param_grid=params, cv=5, scoring=f2_scorer)
+    grid_model.fit(X, y['Fraud'])
+    # print('Best params:', grid_model.best_params_)
+    # Print training times
+    train_time = time.time()-start_time
+    mins = int(train_time//60)
+    print('Training time: '+str(mins)+'m '+str(round(train_time-mins*60))+'s')
+    return grid_model
 
 ## Import data
 data_path = 'dataset/newgen2.csv'
